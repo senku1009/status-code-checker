@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Status Code Checker</title>
+</head>
+
+<body>
+    <p>URL List:</p>
+    <textarea id="url_list" name="url_list" rows="10" cols="50">https://senku.jp
+http://yahoo.com
+http://google.com</textarea>
+
+    <table id="result"></table>
+
+    <input type="button" id="crawl_btn" value="Crawl">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('#crawl_btn').on('click', function () {
+                $("#url_list").prop("disabled", true);
+                $("#crawl_btn").prop("disabled", true);
+
+                var text = document.getElementById('url_list').value.replace(/\r\n|\r/g, "\n");
+                var url_array = text.split('\n');
+
+                for (var i = 0; i < url_array.length; i++) {
+                    sccAjax(url_array[i]);
+                }
+
+                $("#url_list").prop("disabled", false);
+                $("#crawl_btn").prop("disabled", false);
+            });
+
+            function sccAjax(url) {
+                $.ajax({
+                    url: './scc.api.php',
+                    type: 'POST',
+                    dataType: 'json',
+                    timeout: 5000,
+                    async: false,
+                    data: {
+                        'url': url
+                    }
+                })
+                    .then(
+                        function (data) {
+                            var rows = "";
+
+                            for (i = 0; i < data.length; i++) {
+                                rows += "<tr>";
+                                if (i !== 0) rows += '<td></td>';
+                                for (j = 0; j < data[i].length; j++) {
+                                    rows += "<td>";
+                                    rows += data[i][j];
+                                    rows += "</td>";
+                                }
+                                if (i === 0) rows += '<td></td>';
+                                rows += "</tr>";
+                            }
+
+                            $("#result").append(rows);
+                            console.log(data);
+                        },
+                        function (data) {
+                            alert(data['url'] + 'リクエスト失敗');
+                            console.log(data);
+                        }
+                    )
+            }
+        });
+    </script>
+
+</body>
+
+</html>
